@@ -58,6 +58,7 @@ The script will then print the details of your current active network connection
 
 ### Example Output
 
+```bash
 **If connected to Wi-Fi:**
 
 🔍 Checking active network connection on this Mac... 
@@ -71,7 +72,9 @@ The script will then print the details of your current active network connection
   Interface Name: en0 
 -------------------------- 
 
+```
 
+```bash
 **If connected via Ethernet:**
 
 🔍 Checking active network connection on this Mac... 
@@ -83,6 +86,10 @@ The script will then print the details of your current active network connection
   MAC Address: a1:b2:c3:d4:e5:f7 
   Interface Name: en5 
 -------------------------- 
+
+```
+
+
 
 
 
