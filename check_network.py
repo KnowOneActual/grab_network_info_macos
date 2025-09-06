@@ -1,26 +1,40 @@
 import subprocess
 import re
 import psutil
+import socket  # Added for network constants
 
 
 def get_default_interface():
     """
-    Finds the primary network interface (e.g., 'en0') on macOS
-    by parsing the output of the 'netstat -rn' command.
+    Finds the primary network interface on macOS by looking for the
+    default route that has a gateway IP address, ignoring virtual interfaces.
     """
     try:
-        # This command lists the routing tables; the default route is our target.
-        command = "netstat -rn | grep default"
+        # Get the IPv4 routing table.
+        command = "netstat -rn -f inet"
         result = subprocess.check_output(command, shell=True, text=True)
 
-        # The interface name is usually the last word on the 'default' line.
-        default_interface = result.strip().split()[-1]
-        print(f"✅ Found default network interface: {default_interface}")
-        return default_interface
+        # Search for the line defining the default route
+        for line in result.splitlines():
+            # A typical default route looks like: 'default 192.168.1.1 UGSc en0'
+            if line.startswith("default"):
+                parts = line.split()
+                if len(parts) >= 4:
+                    # The gateway is the 2nd part, interface is the 4th (or last)
+                    gateway = parts[1]
+                    interface = parts[3]
+                    # Check if the gateway is a valid IP to avoid virtual interfaces
+                    if all(c in "0123456789." for c in gateway):
+                        print(
+                            f"✅ Found default network interface: {interface} via gateway {gateway}"
+                        )
+                        return interface
+
+        print("❌ Could not find a standard default network interface.")
+        return None
+
     except subprocess.CalledProcessError:
-        print(
-            "❌ Could not determine the default network interface. Are you connected to a network?"
-        )
+        print("❌ Could not check routing table. Are you connected to a network?")
         return None
 
 
@@ -32,37 +46,29 @@ def get_connection_info(interface):
 
     # Use networksetup to determine if the interface is Wi-Fi or Ethernet
     try:
+        # This command fails if the interface is not a Wi-Fi device
         command = f"networksetup -getairportnetwork {interface}"
         result = subprocess.check_output(
             command, shell=True, text=True, stderr=subprocess.DEVNULL
         )
 
-        # If the command succeeds, it's a Wi-Fi connection
         info["type"] = "Wi-Fi"
         ssid_match = re.search(r"Current Wi-Fi Network: (.+)", result)
         if ssid_match:
             info["ssid"] = ssid_match.group(1)
 
     except subprocess.CalledProcessError:
-        # If the command fails, it's likely an Ethernet or other wired connection
         info["type"] = "Ethernet"
 
-    # Use psutil to get IP address information for the interface
+    # Use psutil to get IP address information
     try:
         addresses = psutil.net_if_addrs().get(interface, [])
         for addr in addresses:
-            # We are looking for the IPv4 address
-            if (
-                addr.family == psutil.AF_LINK.family
-            ):  # In Python 3.9+ this is socket.AF_INET
-                info["mac_address"] = addr.address
-            elif (
-                addr.family == psutil.AF_INET6.family
-            ):  # In Python 3.9+ this is socket.AF_INET6
-                info["ipv6_address"] = addr.address
-            else:
+            # CORRECTED LOGIC: Check for IPv4 and MAC addresses
+            if addr.family == socket.AF_INET:  # AF_INET is for IPv4
                 info["ipv4_address"] = addr.address
-
+            elif addr.family == psutil.AF_LINK:  # AF_LINK is for the MAC Address
+                info["mac_address"] = addr.address
     except Exception as e:
         print(f"Could not get IP addresses for {interface}: {e}")
 
@@ -88,6 +94,7 @@ def main():
                     f"  Wi-Fi Network (SSID): {connection_details.get('ssid', 'N/A')}"
                 )
             print(f"  IP Address: {connection_details.get('ipv4_address', 'N/A')}")
+            print(f"  MAC Address: {connection_details.get('mac_address', 'N/A')}")
             print(f"  Interface Name: {connection_details.get('interface', 'N/A')}")
             print("--------------------------\n")
         else:
