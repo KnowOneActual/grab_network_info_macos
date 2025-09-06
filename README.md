@@ -58,50 +58,45 @@ The script will then print the details of your current active network connection
 
 ### Example Output
 
-```bash
 **If connected to Wi-Fi:**
 
-🔍 Checking active network connection on this Mac... 
-✅ Found default network interface: en0 via gateway 192.168.1.1 
- 
---- Connection Details --- 
-  Connection Type: Wi-Fi 📶 
-  Wi-Fi Network (SSID): Your-WiFi-Name 
-  IP Address: 192.168.1.123 
-  MAC Address: a1:b2:c3:d4:e5:f6 
-  Interface Name: en0 
--------------------------- 
-
-```
-
 ```bash
-**If connected via Ethernet:**
+🔍 Checking active network connection on this Mac...
+✅ Found default network interface: en0 via gateway 192.168.1.1
 
-🔍 Checking active network connection on this Mac... 
-✅ Found default network interface: en5 via gateway 10.0.1.1 
- 
---- Connection Details --- 
-  Connection Type: Ethernet 📶 
-  IP Address: 10.0.1.45 
-  MAC Address: a1:b2:c3:d4:e5:f7 
-  Interface Name: en5 
--------------------------- 
+--- Connection Details ---
+  Connection Type: Wi-Fi 📶
+  Wi-Fi Network (SSID): Your-WiFi-Name
+  IPv4 Address: 192.168.1.123
+  MAC Address: a1:b2:c3:d4:e5:f6
+  Interface Name: en0
+--------------------------
 
 ```
 
+**If connected via Ethernet:**
+```bash
+🔍 Checking active network connection on this Mac...
+✅ Found default network interface: en5 via gateway 10.0.1.1
+
+--- Connection Details ---
+  Connection Type: Ethernet 📶
+  IPv4 Address: 10.0.1.45
+  MAC Address: a1:b2:c3:d4:e5:f7
+  Interface Name: en5
+--------------------------
 
 
+```
 
-
-## How It Works
-
+How It Works
 The script uses a combination of built-in macOS command-line tools and the psutil library:
 
+netstat -rn -f inet: This command is used to find the default network route and identify the primary network interface (e.g., en0).
 
+networksetup -getairportnetwork [interface]: By attempting to run this command, the script determines if the interface is a Wi-Fi device. If the command succeeds, it's Wi-Fi; if it fails, it's assumed to be Ethernet.
 
-1. netstat -rn -f inet: This command is used to find the default network route and identify the primary network interface (e.g., en0).
-2. networksetup -getairportnetwork [interface]: By attempting to run this command, the script determines if the interface is a Wi-Fi device. If the command succeeds, it's Wi-Fi; if it fails, it's assumed to be Ethernet.
-3. psutil: This cross-platform library is used to easily and reliably fetch network interface details like IP and MAC addresses.
+psutil: This cross-platform library is used to easily and reliably fetch network interface details like IP and MAC addresses.
 
 
 ## License
