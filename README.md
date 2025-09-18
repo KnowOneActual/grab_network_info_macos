@@ -22,24 +22,24 @@ A simple Python script to quickly determine the primary network connection on a 
 
 
 ## Prerequisites
-
-
-
 * macOS
 * Python 3.x
 
 
 ## Setup
 
-
-
 1. **Clone the repository (or download the files):** 
-git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git) 
-cd your-repo-name 
+```bash
+git clone https://github.com/KnowOneActual/grab_network_info_macos.git
+cd your-repo-name
+```
 
 2. Install the required Python package: 
 This project depends on the psutil library. You can install it using the provided requirements.txt file. 
-pip install -r requirements.txt 
+
+```bash
+pip install -r requirements.txt
+```
 
 
 
